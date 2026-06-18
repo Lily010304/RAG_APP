@@ -7,4 +7,6 @@ qdrant-client
 fastapi
 uvicorn
 llama-index
+llama-index-core
+llama-index-readers-file
 pydantic
