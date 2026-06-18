@@ -4,3 +4,7 @@ google-generativeai
 python-dotenv
 requests
 qdrant-client
+fastapi
+uvicorn
+llama-index
+pydantic
