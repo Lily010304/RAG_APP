@@ -20,7 +20,7 @@ inngest_client = inngest.Inngest(
     logger = logging.getLogger("uvicorn"),
     is_production = False,
     event_key = os.getenv("INNGEST_API_KEY"),
-    api_base = "https://api.inngest.com",
+    event_api_base_url = "https://api.inngest.com",
     serializer = inngest.PydanticSerializer(),
 
 )
