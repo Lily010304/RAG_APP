@@ -19,7 +19,7 @@ inngest_client = inngest.Inngest(
     app_id = "rag_app",
     logger = logging.getLogger("uvicorn"),
     is_production = False,
-    api_key = os.getenv("INNGEST_API_KEY"),
+    event_key = os.getenv("INNGEST_API_KEY"),
     api_base = "https://api.inngest.com",
     serializer = inngest.PydanticSerializer(),
 
