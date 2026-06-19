@@ -90,4 +90,4 @@ async def rag_query_pdf_ai(ctx: inngest.Context):
 
 app = FastAPI() # Create an instance of the FastAPI class. This instance will be our WSGI application.
 
-inngest.fast_api.serve(app, inngest_client, [ingest_pdf, rag_query_pdf_ai]) # Serve the FastAPI application with Inngest integration.
+inngest.fast_api.serve(app, inngest_client, [ingest_pdf, rag_query_pdf_ai], serve_path="/api/inngest") # Serve the FastAPI application with Inngest integration.
