@@ -18,7 +18,7 @@ load_dotenv() # Load environment variables from a .env file into the system's en
 inngest_client = inngest.Inngest(
     app_id = "rag_app",
     logger = logging.getLogger("uvicorn"),
-    is_production = False,
+    is_production = True,
     event_key = os.getenv("INNGEST_API_KEY"),
     event_api_base_url = "https://api.inngest.com",
     serializer = inngest.PydanticSerializer(),
