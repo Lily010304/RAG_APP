@@ -40,13 +40,13 @@ async def ingest_pdf(ctx: inngest.Context):
 
         # download pdf file from url
         response = requests.get(pdf_url)
-        response.raise_for_error() # raise error if downloading fails
+        response.raise_for_status() # raise error if downloading fails
         pdf_byte = response.content
 
         # create a temp file and write the pdf bytes to it
         with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp_f:
-            tmp_f.write(pdf.bytes)
-            tmp_path = tmp_file.name
+            tmp_f.write(pdf_byte)
+            tmp_path = tmp_f.name
 
         # Process the pdf using the temp file
         chunks = load_and_chunk_pdf(tmp_path)

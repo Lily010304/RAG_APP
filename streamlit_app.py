@@ -21,7 +21,7 @@ st.set_page_config(
 @st.cache_resource
 def get_supabase_client() -> Client:
     # create supabase client for uploading PDF files
-    return crate_client(
+    return create_client(
         st.secrets["SUPABASE_URL"],
         st.secrets["SUPABASE_KEY"]
     )
@@ -58,7 +58,7 @@ def save_pdf_to_supabase(file) -> str:
     )
 
     # Get the public url for the uploaded pdf
-    public_url = client.storage.from_("pdfs").get_public_url(unique_filename)
+    public_url = client.storage.from_("pdfs").get_public_url(unique_f_name)
     return public_url
 
     
@@ -91,7 +91,7 @@ uploaded = st.file_uploader(
 if uploaded is not None:  # Only run this block when the user has selected a file.
     with st.spinner("Uploading and triggering ingestion..."):
         # Upload to a supabase storage and get public url
-        pdf_url = upload_pdf_to_supabase(uploaded)
+        pdf_url = save_pdf_to_supabase(uploaded)
 
 
         # Streamlit code runs synchronously, so we use asyncio.run(...) to execute
