@@ -23,9 +23,9 @@ def get_inngest_client() -> inngest.Inngest:
     # app_id must match what your server-side Inngest functions expect.
     return inngest.Inngest(app_id="rag_app",
                            # This key is read from Streamlit's secrets (not .env on Cloud)
-        api_key=st.secrets["INNGEST_API_KEY"],
+        event_key=st.secrets["INNGEST_API_KEY"],
         # This tells the client to send events to Inngest Cloud
-        api_base="https://api.inngest.com", is_production=True)
+        api_base_url="https://api.inngest.com", is_production=True)
 
 
 def save_uploaded_pdf(file) -> Path:
