@@ -50,12 +50,18 @@ def save_pdf_to_supabase(file) -> str:
     # get filebytes from file uploader from streamlit
     file_bytes = file.getbuffer().tobytes()
 
-    # upload to a supabase bucket named pdfs
-    client.storage.from_("pdfs").upload(
+    try:
+    result = client.storage.from_("pdfs").upload(
         path=unique_f_name,
         file=file_bytes,
-        file_options={"content-type": "application/pdf"} # to ensure the file is treated as a pdf
+        file_options={"content-type": "application/pdf"}
     )
+
+    st.write(result)
+
+    except Exception as e:
+        st.error(str(e))
+        raise
 
     # Get the public url for the uploaded pdf
     public_url = client.storage.from_("pdfs").get_public_url(unique_f_name)
