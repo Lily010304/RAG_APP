@@ -7,6 +7,8 @@ import inngest  # Inngest client SDK: lets us send events to Inngest.
 from dotenv import load_dotenv  # Loads values from a local .env file into environment variables.
 import os  # Access environment variables like INNGEST_API_BASE.
 import requests  # Simple HTTP client to call the local Inngest API for run output.
+import io # handeling file bytes in memory without saving to disk
+from supabase import create_client, Client # Supabase client for cloud storage
 
 load_dotenv()  # Read .env and set process env vars (e.g., INNGEST_API_BASE).
 
@@ -16,6 +18,13 @@ st.set_page_config(
     layout="centered",  # Center the content (instead of wide layout).
 )
 
+@st.cache_resource
+def get_supabase_client() -> Client:
+    # create supabase client for uploading PDF files
+    return crate_client(
+        st.secrets["SUPABASE_URL"],
+        st.secrets["SUPABASE_KEY"]
+    )
 
 @st.cache_resource  # Cache this object for the life of the Streamlit process.
 def get_inngest_client() -> inngest.Inngest:
@@ -28,21 +37,33 @@ def get_inngest_client() -> inngest.Inngest:
         api_base_url="https://api.inngest.com", is_production=True)
 
 
-def save_uploaded_pdf(file) -> Path:
-    # Streamlit's uploader returns an UploadedFile-like object.
-    # We persist it to disk so the backend can read it by path.
+def save_pdf_to_supabase(file) -> str:
+    # Upload PDF to supabase cloud and return the public url.
 
-    uploads_dir = Path("uploads")  # Local folder where uploaded PDFs will be stored.
-    uploads_dir.mkdir(parents=True, exist_ok=True)  # Ensure the folder exists.
-
-    file_path = uploads_dir / file.name  # Target path for the uploaded PDF.
-    file_bytes = file.getbuffer()  # Efficiently get the uploaded bytes.
-    file_path.write_bytes(file_bytes)  # Write bytes to disk.
-
-    return file_path  # Return a Path object for downstream use.
+    client = get_supabase_client()
 
 
-async def send_rag_ingest_event(pdf_path: Path) -> None:
+    # Generate a unique filename to avoid collisions
+    timestamp = int(time.time())
+    unique_f_name = f"{timestamp}_{file.name}"
+
+    # get filebytes from file uploader from streamlit
+    file_bytes = file.getbuffer().tobytes()
+
+    # upload to a supabase bucket named pdfs
+    client.storage.from_("pdfs").upload(
+        path=unique_f_name,
+        file=file_bytes,
+        file_options={"content-type": "application/pdf"} # to ensure the file is treated as a pdf
+    )
+
+    # Get the public url for the uploaded pdf
+    public_url = client.storage.from_("pdfs").get_public_url(unique_filename)
+    return public_url
+
+    
+
+async def send_rag_ingest_event(pdf_url: str, source_id: str) -> None:
     # Send an Inngest event that triggers the "Rag: Ingest PDF" function.
     # This is async because the Inngest client uses async I/O.
 
@@ -52,9 +73,9 @@ async def send_rag_ingest_event(pdf_path: Path) -> None:
             name="rag/ingest_pdf",  # Must match the trigger name in main.py.
             data={
                 # Backend reads this absolute path to load the PDF file.
-                "pdf_path": str(pdf_path.resolve()),
+                "pdf_url": pdf_url,
                 # A stable ID for where these chunks came from (e.g., file name).
-                "source_id": pdf_path.name,
+                "source_id": source_id,
             },
         )
     )
@@ -69,16 +90,18 @@ uploaded = st.file_uploader(
 
 if uploaded is not None:  # Only run this block when the user has selected a file.
     with st.spinner("Uploading and triggering ingestion..."):
-        path = save_uploaded_pdf(uploaded)  # Save the upload so backend can read it.
+        # Upload to a supabase storage and get public url
+        pdf_url = upload_pdf_to_supabase(uploaded)
+
 
         # Streamlit code runs synchronously, so we use asyncio.run(...) to execute
         # our async event-sending function and wait until the send completes.
-        asyncio.run(send_rag_ingest_event(path))
+        asyncio.run(send_rag_ingest_event(pdf_url, uploaded.name))
 
         # Small pause purely for UX (gives user time to see the spinner).
         time.sleep(0.3)
 
-    st.success(f"Triggered ingestion for: {path.name}")  # Show confirmation.
+    st.success(f"Triggered ingestion for: {uploaded.name}")  # Show confirmation.
     st.caption("You can upload another PDF if you like.")  # Small helper text.
 
 st.divider()  # Horizontal divider between ingest section and query section.

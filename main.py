@@ -11,6 +11,8 @@ from google import genai # This is the Google Gemini API client library for Pyth
 from data_loader import load_and_chunk_pdf, embed_texts # Importing functions from the data_loader module to load and chunk PDF files and to embed texts.
 from vector_db import QdrantStorage # Importing the QdrantStorage class from the vector_db module to interact with the Qdrant vector search engine.
 from custom_types import RAGChunkAndSrc, RAGUpsertResult, RAGSearchResult, RAGQueryResult # Importing custom data models from the custom_types module for structured data handling in the application.
+import requests # for downloading files from urls
+import tempfile # For creating tgemp files that pdf reader can process
 
 load_dotenv() # Load environment variables from a .env file into the system's environment variables.
 
@@ -33,9 +35,23 @@ inngest_client = inngest.Inngest(
 
 async def ingest_pdf(ctx: inngest.Context):
     def _load(ctx: inngest.Context) -> RAGChunkAndSrc:
-        pdf_path = ctx.event.data["pdf_path"]
-        source_id = ctx.event.data.get("source_id", pdf_path)
-        chunks = load_and_chunk_pdf(pdf_path)
+        pdf_url = ctx.event.data["pdf_url"]
+        source_id = ctx.event.data.get("source_id", pdf_url)
+
+        # download pdf file from url
+        response = requests.get(pdf_url)
+        response.raise_for_error() # raise error if downloading fails
+        pdf_byte = response.content
+
+        # create a temp file and write the pdf bytes to it
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp_f:
+            tmp_f.write(pdf.bytes)
+            tmp_path = tmp_file.name
+
+        # Process the pdf using the temp file
+        chunks = load_and_chunk_pdf(tmp_path)
+        # clean the pdf using the temp file path
+        os.unlink(tmp_path)
         return RAGChunkAndSrc(chunks=chunks, source_id=source_id)
     
     def _upsert(chunks_and_src: RAGChunkAndSrc) -> RAGUpsertResult:
