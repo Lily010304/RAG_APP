@@ -21,9 +21,9 @@ st.set_page_config(
 def get_inngest_client() -> inngest.Inngest:
     # Create an Inngest client used to send events.
     # app_id must match what your server-side Inngest functions expect.
-    return inngest.Inngest(app_id="rag_app", 
-                           # This key is read from Streamlit's secrets
-        api_key=os.getenv("INNGEST_API_KEY"),
+    return inngest.Inngest(app_id="rag_app",
+                           # This key is read from Streamlit's secrets (not .env on Cloud)
+        api_key=st.secrets["INNGEST_API_KEY"],
         # This tells the client to send events to Inngest Cloud
         api_base="https://api.inngest.com", is_production=True)
 
@@ -106,8 +106,8 @@ async def send_rag_query_event(question: str, top_k: int) -> None:
 
 def _inngest_api_base() -> str:
     # Base URL for the local Inngest dev API.
-    # You can override it by setting INNGEST_API_BASE in your environment/.env.
-    return os.getenv("INNGEST_API_BASE")
+    # On Streamlit Cloud, use st.secrets instead of os.getenv.
+    return st.secrets.get("INNGEST_API_BASE") or os.getenv("INNGEST_API_BASE")
 
 
 def fetch_runs(event_id: str) -> list[dict]:
