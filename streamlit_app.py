@@ -51,7 +51,7 @@ def save_pdf_to_supabase(file) -> str:
     file_bytes = file.getbuffer().tobytes()
 
     try:
-    result = client.storage.from_("pdfs").upload(
+        result = client.storage.from_("pdfs").upload(
         path=unique_f_name,
         file=file_bytes,
         file_options={"content-type": "application/pdf"}
