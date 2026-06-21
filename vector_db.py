@@ -1,10 +1,12 @@
 from qdrant_client import QdrantClient # this is the client for interacting with Qdrant, a vector search engine.
 from qdrant_client.models import VectorParams, Distance, PointStruct # these are models for defining vector parameters, distance metrics, and point structures in Qdrant.
-
+import os
 
 class QdrantStorage:
-    def __init__(self, url="http://localhost:6333", collection="docs", dim=3072):
-        self.client = QdrantClient(url=url)
+    def __init__(self, url=None, collection="docs", dim=3072):
+        url = url or os.environ.get("QDRANT_URL")
+        api_key = api_key or os.environ.get("QDRANT_API_KEY")
+        self.client = QdrantClient(url=url, api_key=api_key)
         self.collection = collection
         
         if not self.client.collection_exists(self.collection):
