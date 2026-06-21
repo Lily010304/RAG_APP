@@ -57,7 +57,7 @@ def save_pdf_to_supabase(file) -> str:
         file_options={"content-type": "application/pdf"}
     )
 
-    st.write(result)
+        st.write(result)
 
     except Exception as e:
         st.error(str(e))
