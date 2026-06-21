@@ -142,8 +142,9 @@ def _inngest_api_base() -> str:
 def fetch_runs(event_id: str) -> list[dict]:
     # Call the Inngest HTTP API to list runs created for a given event.
     url = f"{_inngest_api_base()}/events/{event_id}/runs"  # Endpoint for event runs.
-
-    resp = requests.get(url)  # Make the GET request.
+    # since we moved to cloud we need to provide it with authorization aka api key for inngest
+    headers = {"Authorization": f"Bearer {st.secrets['INNGEST_SIGNING_KEY']}"}
+    resp = requests.get(url, headers=headers)  # Make the GET request.
     resp.raise_for_status()  # Raise an exception for non-2xx responses.
 
     data = resp.json()  # Parse JSON response body.
