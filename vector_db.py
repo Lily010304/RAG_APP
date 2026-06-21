@@ -3,7 +3,7 @@ from qdrant_client.models import VectorParams, Distance, PointStruct # these are
 import os
 
 class QdrantStorage:
-    def __init__(self, url=None, collection="docs", dim=3072):
+    def __init__(self, url=None, api_key=None, collection="docs", dim=3072):
         url = url or os.environ.get("QDRANT_URL")
         api_key = api_key or os.environ.get("QDRANT_API_KEY")
         self.client = QdrantClient(url=url, api_key=api_key)
