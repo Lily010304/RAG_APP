@@ -1,5 +1,7 @@
 # RAG_APP (PDF Ingest + Qdrant + Gemini + Inngest + Streamlit)
 
+Check it out: [Live Link](https://lily010304-rag-app-streamlit-app-5ppc6f.streamlit.app/)
+
 <img width="1889" height="924" alt="upload" src="https://github.com/user-attachments/assets/4f5f2d9d-a456-4005-a60a-f45531807a1b" />
 
 <img width="1222" height="862" alt="question" src="https://github.com/user-attachments/assets/59e4a3b3-1475-4c08-accb-1113a9a85673" />
